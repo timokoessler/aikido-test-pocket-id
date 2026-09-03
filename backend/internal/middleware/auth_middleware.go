@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"github.com/AikidoSec/firewall-go/zen"
 	"github.com/gin-gonic/gin"
 	"github.com/pocket-id/pocket-id/backend/internal/apikey"
 	"github.com/pocket-id/pocket-id/backend/internal/apperror"
@@ -79,6 +80,7 @@ func (m *AuthMiddleware) Add() gin.HandlerFunc {
 			c.Set("userIsAdmin", isAdmin)
 			c.Set("authenticationMethod", authenticationMethod)
 			c.Set("authenticationTime", authenticationTime)
+			zen.SetUser(c, userID, "")
 			if c.IsAborted() {
 				return
 			}
@@ -113,6 +115,7 @@ func (m *AuthMiddleware) Add() gin.HandlerFunc {
 		if err == nil {
 			c.Set("userID", userID)
 			c.Set("userIsAdmin", isAdmin)
+			zen.SetUser(c, userID, "")
 			if c.IsAborted() {
 				return
 			}

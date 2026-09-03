@@ -5,6 +5,8 @@ services:
     env_file: .env
     ports:
       - 1411:1411
+    environment:
+      - AIKIDO_TOKEN=
     volumes:
       - "./data:/app/data"
     # Optional healthcheck
