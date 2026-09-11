@@ -10,10 +10,12 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/AikidoSec/firewall-go/zen"
 	"github.com/fsnotify/fsnotify"
 	sloggin "github.com/gin-contrib/slog"
 	"github.com/gin-gonic/gin"
@@ -124,11 +126,37 @@ func shouldTraceRequest(r *http.Request) bool {
 }
 
 func registerGlobalMiddleware(r *gin.Engine) {
+	r.Use(AikidoMiddleware())
 	r.Use(middleware.HeadMiddleware())
 	r.Use(middleware.NewCacheControlMiddleware().Add())
 	r.Use(middleware.NewCorsMiddleware().Add())
 	r.Use(middleware.NewCspMiddleware().Add())
 	r.Use(middleware.NewErrorHandlerMiddleware().Add())
+}
+
+func AikidoMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		blockResult := zen.ShouldBlockRequest(c)
+
+		if blockResult != nil {
+			if blockResult.Type == "rate-limited" {
+				message := "You are rate limited by Zen."
+				if blockResult.Trigger == "ip" {
+					message += " (Your IP: " + *blockResult.IP + ")"
+				}
+				c.Header("Retry-After", strconv.Itoa(blockResult.RetryAfterSeconds))
+				c.String(http.StatusTooManyRequests, message)
+				c.Abort()
+				return
+			} else if blockResult.Type == "blocked" {
+				c.String(http.StatusForbidden, "You are blocked by Zen.")
+				c.Abort()
+				return
+			}
+		}
+
+		c.Next()
+	}
 }
 
 func registerRoutes(r *gin.Engine, db *gorm.DB, svc *services, rateLimitServices map[string]*ratelimit.RateLimitService) error {

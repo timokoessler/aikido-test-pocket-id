@@ -5,6 +5,7 @@ import (
 	"os"
 	_ "time/tzdata"
 
+	"github.com/AikidoSec/firewall-go/zen"
 	"github.com/pocket-id/pocket-id/backend/internal/cmds"
 	"github.com/pocket-id/pocket-id/backend/internal/common"
 )
@@ -14,6 +15,11 @@ import (
 // @description.markdown
 
 func main() {
+	if err := zen.Protect(); err != nil {
+		fmt.Fprintf(os.Stderr, "aikido zen error: %v\n", err)
+		os.Exit(1)
+	}
+
 	if err := common.ValidateEnvConfig(&common.EnvConfig); err != nil {
 		fmt.Fprintf(os.Stderr, "config error: %v\n", err)
 		os.Exit(1)
