@@ -40,7 +40,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
   VERSION=$(cat /build/.version) && \
   CGO_ENABLED=0 \
   GOOS=linux \
-  go build \
+  go tool zen-go go build \
     -tags "${BUILD_TAGS}" \
     -ldflags="-X github.com/pocket-id/pocket-id/backend/internal/common.Version=${VERSION} -buildid=${VERSION}" \
     -trimpath \

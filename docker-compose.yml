@@ -7,6 +7,8 @@ services:
       - 1411:1411
     volumes:
       - "./data:/app/data"
+    environment:
+      - AIKIDO_TOKEN=
     # Optional healthcheck
     healthcheck:
       test: [ "CMD", "/app/pocket-id", "healthcheck" ]
